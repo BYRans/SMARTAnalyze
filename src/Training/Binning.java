@@ -112,6 +112,11 @@ public class Binning {
 					.get(lastIndex + 1)) / 2;
 			cpindex++;
 		}
+
+		// 如果一个分割点都没找到
+		if (cpindex == 0) {
+			cutPoints[0] = dataList.get(dataList.size() - 1) + 1;
+		}
 		return cutPoints;
 	}
 }
