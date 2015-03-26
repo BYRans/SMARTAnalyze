@@ -6,8 +6,16 @@ import java.io.IOException;
 /** 全局文件夹路径变量 */
 public final class UTILITY {
 
+	/** 特征向量维数 D */
+	public static int DIMENSION = 12;
+
+	/** 初始化特征向量维数变量D */
+	public static void SET_FEATURE_VECTOR_dimension(int count) {
+		UTILITY.DIMENSION = count;
+	}
+
 	/** EM算法 将数据分为k类 */
-	public final static int K = 10;
+	public final static int K = 3;
 	/** Binning划分bins数目 */
 	public final static int Bins = 10;
 
@@ -25,6 +33,9 @@ public final class UTILITY {
 
 	/** 特征向量 文件路径 */
 	public final static String FEATURE_VECTOR_PATH = "/home/pgxc/SMARTAnalyze/featureVector/featureVector.txt";
+
+	/** 特征向量 文件路径 */
+	public final static String BINNED_FEATURE_VECTOR_PATH = "/home/pgxc/SMARTAnalyze/featureVector/binnedFeatureVector.txt";
 
 	/**
 	 * 初始化文件 如果文件不存在，则创建该文件

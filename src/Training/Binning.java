@@ -1,8 +1,10 @@
 package Training;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
@@ -13,22 +15,55 @@ import Golobal.UTILITY;
 
 public class Binning {
 
-	public static void main(String[] args) {
+	public static void main(String[] args) throws IOException {
 		System.out.println("Running...");
 		List<String[]> vectorList = readVector(UTILITY.FEATURE_VECTOR_PATH);
+		List<Integer[]> binVecList = new ArrayList<Integer[]>();
 		List<double[]> cutPointsList = new ArrayList<double[]>();// 各特征binning切分点
 		if (vectorList.size() == 0) {
 			System.out.println("Feature vector dataset exception!");
 			return;
 		}
 		for (int i = 0; i < vectorList.get(0).length; i++) {
-			List<Integer> dataList = new ArrayList<Integer>();
+			List<Long> dataList = new ArrayList<Long>();// 用Long，解决越界问题
 			for (int j = 0; j < vectorList.size(); j++) {
-				dataList.add(Integer.valueOf(vectorList.get(j)[i]));
+				dataList.add(Long.valueOf(vectorList.get(j)[i]));
 			}
 			double[] cutPoints = calculateCutPointsByEqualFrequencyBinning(dataList);
 			cutPointsList.add(cutPoints);
 		}
+
+		// next --> 由cutPointsList binning每个特征
+		for (String[] vector : vectorList) {
+			Integer[] binVector = new Integer[vector.length];
+			for (int i = 0; i < vector.length; i++) {
+				for (int j = 0; j < cutPointsList.get(i).length; j++) {
+					if (Integer.valueOf(vector[i]) < cutPointsList.get(i)[j]) {
+						binVector[i] = j + 1;
+						break;
+					}
+				}
+			}
+			binVecList.add(binVector);
+		}
+
+		// binning后的Vector写入文件
+		UTILITY.INIT_FILE(UTILITY.BINNED_FEATURE_VECTOR_PATH);
+		try {
+			BufferedWriter writer = new BufferedWriter(new FileWriter(new File(
+					UTILITY.BINNED_FEATURE_VECTOR_PATH), false));
+			for (Integer[] binVectorArr : binVecList) {
+				for (Integer item : binVectorArr)
+					writer.write(item + "\t");
+				writer.newLine();
+				writer.flush();
+			}
+			writer.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		System.out.println("Finished...");
 
 	}
 
@@ -59,31 +94,34 @@ public class Binning {
 	}
 
 	/**
-	 * 计算一个特征的切割点
+	 * 计算一个特征的切分点
 	 *
 	 * @param dataList
 	 *            输入需要切割的数据
-	 * @return 切割点数组
+	 * @return 切分点数组
 	 */
 	protected static double[] calculateCutPointsByEqualFrequencyBinning(
-			List<Integer> dataList) {
+			List<Long> dataList) {
 		// 排序切分数据
 		Collections.sort(dataList);
 		// 计算切割的理想分割数
-		double dataCount = dataList.size();
+		Integer dataCount = dataList.size();
 		double freq = dataCount / UTILITY.Bins;
 		double[] cutPoints = new double[UTILITY.Bins - 1];
-		// 计算分割点
+		for (int i = 0; i < cutPoints.length; i++) {
+			cutPoints[i] = Double.NEGATIVE_INFINITY;
+		}
+		// 计算切分点
 		double counter = 0, last = 0;
 		int cpindex = 0, lastIndex = -1;
 		for (int i = 0; i < dataList.size() - 1; i++) {
 			counter++;
 			dataCount--;
-			// 是否到达潜在分割点
+			// 是否到达潜在切分点
 			if (dataList.get(i) < dataList.get(i + 1)) {
 				// 是否达到理想分割数
 				if (counter >= freq) {
-					// 当下潜在切割点是否比上一个潜在切割点更差
+					// 当下潜在切分点是否比上一个潜在切分点更差
 					if (((freq - last) < (counter - freq)) && (lastIndex != -1)) {
 						cutPoints[cpindex] = (dataList.get(lastIndex) + dataList
 								.get(lastIndex + 1)) / 2;
@@ -106,17 +144,28 @@ public class Binning {
 				}
 			}
 		}
-		// 检查是否还有另一个切割点
-		if ((cpindex < cutPoints.length) && (lastIndex != -1)) {
+		// 检查是否还有另一个切分点
+		if ((cpindex < cutPoints.length - 1) && (lastIndex != -1)) {
 			cutPoints[cpindex] = (dataList.get(lastIndex) + dataList
 					.get(lastIndex + 1)) / 2;
 			cpindex++;
 		}
 
-		// 如果一个分割点都没找到
-		if (cpindex == 0) {
-			cutPoints[0] = dataList.get(dataList.size() - 1) + 1;
+		// 整理切分点数组，让数组里只包含找到的点 + 上界点
+		int arrLenth = 0;
+		for (int i = 0; i < cutPoints.length; i++) {
+			if (cutPoints[i] == Double.NEGATIVE_INFINITY)
+				break;
+			arrLenth++;
 		}
-		return cutPoints;
+		double[] finalCutPoints = new double[arrLenth + 1];
+		for (int i = 0; i < cutPoints.length; i++) {
+			if (cutPoints[i] == Double.NEGATIVE_INFINITY)
+				break;
+			finalCutPoints[i] = cutPoints[i];
+		}
+		finalCutPoints[arrLenth] = dataList.get(dataList.size() - 1) + 1;
+
+		return finalCutPoints;
 	}
 }

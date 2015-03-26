@@ -16,6 +16,7 @@ public class FeatureSeletion {
 
 	public static void main(String[] args) throws IOException {
 		System.out.println("Running...");
+		
 		List<String[]> vectorList = new ArrayList<String[]>();
 		try {
 			File file = new File(UTILITY.DYNAMIC_HEALTH_PATH);
