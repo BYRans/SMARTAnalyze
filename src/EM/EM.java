@@ -8,7 +8,7 @@ public class EM {
 	String fileName = null;
 
 	private static double means[] = null;
-	private static double prior[] = null;// p(w_i|x)
+	private static double prior[] = null;// p(k)
 	private static double varianceMatrix[] = null;
 	private static double nK[] = null;
 	private static double[][] weightMatrix = null;
@@ -43,7 +43,7 @@ public class EM {
 		double logLikeliHood = 0;
 
 		do {
-			EStep();
+			EStep();//更新weightMatrix，即更新p(w_i|x_i)
 			prevLogLikeliHood = calculateLogLikelyHood();
 			MStep();
 			logLikeliHood = calculateLogLikelyHood();
@@ -62,16 +62,20 @@ public class EM {
 	}
 
 	public void MStep() {
+		//nk是所有样本w_j的和
 		nK = new double[clusters];
 		for (int j = 0; j < clusters; j++) {
 			for (int i = 0; i < clusterData.size(); i++) {
 				nK[j] += weightMatrix[i][j];
 			}
 		}
+		
+		//prior是Φ_j
 		for (int j = 0; j < clusters; j++) {
 			prior[j] = nK[j] / (double) clusterData.size();
 		}
 
+		//means是miu_j
 		for (int j = 0; j < clusters; j++) {
 			double sum = 0.0;
 			for (int i = 0; i < clusterData.size(); i++) {
@@ -80,6 +84,7 @@ public class EM {
 			means[j] = (sum / nK[j]);
 		}
 
+		//varianceMatrix是方差
 		for (int j = 0; j < clusters; j++) {
 			double sum = 0.0;
 			for (int i = 0; i < clusterData.size(); i++) {
@@ -92,8 +97,10 @@ public class EM {
 
 	private void EStep() {
 		for (int i = 0; i < clusterData.size(); i++) {
+			//denom就是p(w_i|x)*p(x)对所有j的和。作为分母，这里就是贝叶斯公式。对吗？？？？？？
 			double denom = 0.0;
 			for (int j = 0; j < clusters; j++) {
+				//此时weight=p(k)*p(w_i|x) 
 				double weight = prior[j]
 						* gaussian(clusterData.get(i), means[j],
 								varianceMatrix[j]);
@@ -130,19 +137,25 @@ public class EM {
 
 	public void initParameters(boolean variance) {
 		for (int i = 0; i < clusters; i++) {
+			//means是高斯的中心点，从样本中随机选了clusters个
 			means[i] = clusterData
 					.get(new Random().nextInt(clusterData.size()));
+			//p(w_i|x)？
 			prior[i] = 1.0 / (double) clusters;
 		}
 		for (int i = 0; i < clusterData.size(); i++) {
 			mean += clusterData.get(i);
 		}
+		//期望miu
 		mean = mean / (double) clusterData.size();
 		for (int i = 0; i < clusterData.size(); i++) {
 			covariance += (clusterData.get(i) - mean)
 					* (clusterData.get(i) - mean);
 		}
+		//covariance方差
 		covariance = covariance / (double) clusterData.size();
+		
+		//variance是什么？为什么true时方差矩阵初始化为1，为false时初始化为 方差*1.几
 		if (variance) {
 			for (int i = 0; i < clusters; i++) {
 				varianceMatrix[i] = 1.0;

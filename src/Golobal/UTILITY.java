@@ -17,7 +17,7 @@ public final class UTILITY {
 	/** EM算法 将数据分为k类 */
 	public final static int K = 3;
 	/** Binning划分bins数目 */
-	public final static int Bins = 10;
+	public final static int BINS = 10;
 
 	/** 健康磁盘静态数据 文件路径 */
 	public final static String STATIC_HEALTH_PATH = "/home/pgxc/SMARTAnalyze/separateData/staticData/staticHealth.txt";
@@ -36,6 +36,15 @@ public final class UTILITY {
 
 	/** 特征向量 文件路径 */
 	public final static String BINNED_FEATURE_VECTOR_PATH = "/home/pgxc/SMARTAnalyze/featureVector/binnedFeatureVector.txt";
+
+	/** Bayes似然函数likelihood 存储文件路径 */
+	public final static String BAYES_POSTERIOR_PATH = "/home/pgxc/SMARTAnalyze/Bayes/posterior.txt";
+
+	/** Bayes先验概率prior 存储文件路径 */
+	public final static String BAYES_PRIOR_PATH = "/home/pgxc/SMARTAnalyze/Bayes/prior.txt";
+
+	/** 测试集 存储文件路径 */
+	public final static String TEST_SET_PATH = "/home/pgxc/SMARTAnalyze/featureVector/testSet.txt";
 
 	/**
 	 * 初始化文件 如果文件不存在，则创建该文件

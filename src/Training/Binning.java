@@ -78,7 +78,7 @@ public class Binning {
 			File file = new File(UTILITY.FEATURE_VECTOR_PATH);
 			BufferedReader br = new BufferedReader(new InputStreamReader(
 					new FileInputStream(file), "UTF-8"));
-			String curLine = br.readLine();
+			String curLine = null;
 			String[] lineArr = null;
 			while ((curLine = br.readLine()) != null) {
 				if ("".equals(curLine.trim()))
@@ -106,8 +106,8 @@ public class Binning {
 		Collections.sort(dataList);
 		// 计算切割的理想分割数
 		Integer dataCount = dataList.size();
-		double freq = dataCount / UTILITY.Bins;
-		double[] cutPoints = new double[UTILITY.Bins - 1];
+		double freq = dataCount / UTILITY.BINS;
+		double[] cutPoints = new double[UTILITY.BINS - 1];
 		for (int i = 0; i < cutPoints.length; i++) {
 			cutPoints[i] = Double.NEGATIVE_INFINITY;
 		}

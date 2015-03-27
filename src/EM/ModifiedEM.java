@@ -129,6 +129,18 @@ public class ModifiedEM {
 	}
 
 	public void initParameters(boolean variance) {
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
 		for (int i = 0; i < clusters; i++) {
 			means[i] = clusterData
 					.get(new Random().nextInt(clusterData.size()));
