@@ -1,7 +1,7 @@
 # SmartAnalyze
 Predict drive failures based on SMART infomation.
 
-#####This project reference papers 《Bayesian approaches to failure prediction for disk drives》. 
+#####This project reference the paper 《Bayesian approaches to failure prediction for disk drives》. 
  
  
  
