@@ -15,7 +15,7 @@ public final class UTILITY {
 	}
 
 	/** EM算法 将数据分为k类 */
-	public final static int K = 3;
+	public final static int K = 10;
 	/** Binning划分bins数目 */
 	public final static int BINS = 10;
 
@@ -42,6 +42,12 @@ public final class UTILITY {
 
 	/** Bayes先验概率prior 存储文件路径 */
 	public final static String BAYES_PRIOR_PATH = "/home/pgxc/SMARTAnalyze/Bayes/prior.txt";
+
+	/** Bayes count(xi=v∧k) 三维数组[d][v][k] 存储文件路径 */
+	public final static String BAYES_COUNT_Xd_V_K = "/home/pgxc/SMARTAnalyze/Bayes/countDVK.txt";
+
+	/** Bayes count(k) 存储文件路径 */
+	public final static String BAYES_COUNT_K = "/home/pgxc/SMARTAnalyze/Bayes/countK.txt";
 
 	/** 测试集 存储文件路径 */
 	public final static String TEST_SET_PATH = "/home/pgxc/SMARTAnalyze/featureVector/testSet.txt";

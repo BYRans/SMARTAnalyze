@@ -6,61 +6,90 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import Golobal.UTILITY;
 
 public class NaiveBayes {
-	private static double[][] posteriorMatrix = null;// p(k_j|x_i)后验概率
 	private static double[] priors = new double[UTILITY.K];// p(k_j)先验概率
+	private static double[][][] COUNT_XdV_K = new double[UTILITY.DIMENSION][UTILITY.BINS][UTILITY.K];// count_xdv_ki,公式3的分子
+	private static double[] count = new double[UTILITY.K];// count[k_i]为所有x_i取值的p(k_i|x_i)总和
+	private static double totalCount_k = 0.0;// count[k]总和
 
 	public static void main(String[] args) {
+		List<double[]> predictList = new ArrayList<double[]>();
 
-		readPosteriorMatrixAndPrior(UTILITY.BAYES_POSTERIOR_PATH,
-				UTILITY.BAYES_PRIOR_PATH);
+		readPosteriorMatrixAndPrior(UTILITY.BAYES_COUNT_Xd_V_K,
+				UTILITY.BAYES_COUNT_K);
 		List<Integer[]> testSetList = readTestSet(UTILITY.TEST_SET_PATH);
-		// double[] predict = new double[UTILITY.K];
+		initPriorsAndTotalCountK();
 		for (Integer[] testRecord : testSetList) {
-			naiveBayes(testRecord);
+			double[] prediction = naiveBayes(testRecord);
+			double[] result = new double[2];
+			for (int i = 0; i < prediction.length; i++) {
+				if (result[1] < prediction[i]) {
+					result[0] = i;
+					result[1] = prediction[i];
+				}
+			}
+			predictList.add(result);
+			for (double[] record : predictList)
+				System.out.println(record[0] + "\t" + record[1]);
 		}
-
 	}
 
-	public static void naiveBayes(Integer[] vector) {
+	/**
+	 * 朴素贝叶斯 计算输入向量的各类别后验概率
+	 * 
+	 * @param vector
+	 *            特征向量
+	 * @return double[] prediction,即P(k|x)
+	 * */
+	public static double[] naiveBayes(Integer[] vector) {
 		double[] prediction = new double[UTILITY.K];
-		double p_xd_kj = 1.0;
+		double p_x_k = 1.0;
 		double evidence = 0.0;
 		for (int j = 0; j < UTILITY.K; j++) {
-			for (int d = 0; d < vector.length; d++) {
-				double p_xi_k = 0.0;// v个p_xiv_k和
-				double count_xiv_kj = 0.0;
-				for (int xi = 0; xi < posteriorMatrix.length; xi++) {// 遍历所有的数据求所有x的P(k_j|x_i)
-					if (binVecList.get(xi)[d] == v)// 指示函数I，当xd==v时加到sum里
-						count_xiv_kj += posteriorMatrix[xi][j];
-				}
-				p_xi_k += count_xiv_kj / priors[j];
-				p_xd_kj *= p_xi_k;// d个p(xd|k)相乘
+			for (int d = 0; d < vector.length; d++) {// d维p（xi=v|k）成绩得到P(x|k)
+				p_x_k *= COUNT_XdV_K[d][vector[d] - 1][j] / count[j];// [vector[d]-1]是特征向量Xd处的值-1，v=Bin-1
 			}
-			double posterior = p_xd_kj * priors[j];
+			double posterior = p_x_k * priors[j];
 			evidence = evidence + posterior;
 			prediction[j] = posterior;
 		}
 		for (int j = 0; j < UTILITY.K; j++) {
 			prediction[j] = prediction[j] / evidence;
 		}
-		for (double posterior : prediction) {
-			System.out.print(posterior + "\t");
-		}
-		System.out.println();
+		return prediction;
 	}
 
-	/** 初始化由EM算法得到的 p(k_j|x_i)后验概率 和 // p(k_j)先验概率 */
-	public static void readPosteriorMatrixAndPrior(String posteriorMatrixPath,
-			String priorPath) {
-		List<double[]> posteriorList = new ArrayList<double[]>();
+	/**
+	 * 计算Bayes先验概率priors[] 和 count(k)的和totalCount_k
+	 */
+	public static void initPriorsAndTotalCountK() {
+		for (int j = 0; j < UTILITY.K; j++) {
+			totalCount_k += count[j];
+		}
+		for (int j = 0; j < UTILITY.K; j++) {
+			priors[j] = count[j] / totalCount_k;
+		}
+	}
+
+	/**
+	 * 初始化由EM算法得到的count_xdv_ki(公式3的分子) 和 p(k_j)先验概率
+	 * 
+	 * @param countDVKPath
+	 *            count_xdv_ki(公式3的分子)存储文件路径
+	 * @param countKPath
+	 *            p(k_j)先验概率存储文件路径
+	 * */
+	public static void readPosteriorMatrixAndPrior(String countDVKPath,
+			String countKPath) {
+		List<double[]> countDVKList = new ArrayList<double[]>();
 		// 读入PosteriorMatrix
 		try {
-			File file = new File(UTILITY.BAYES_POSTERIOR_PATH);
+			File file = new File(countDVKPath);
 			BufferedReader br = new BufferedReader(new InputStreamReader(
 					new FileInputStream(file), "UTF-8"));
 			String curLine = null;
@@ -69,30 +98,30 @@ public class NaiveBayes {
 				if ("".equals(curLine.trim()))
 					continue;
 				lineArr = curLine.split("\t");
-				double[] intArr = new double[lineArr.length];
+				double[] doubleArr = new double[lineArr.length];
 				for (int i = 0; i < lineArr.length; i++)
-					intArr[i] = Double.valueOf(lineArr[i]);
-				posteriorList.add(intArr);
+					doubleArr[i] = Double.valueOf(lineArr[i]);
+				countDVKList.add(doubleArr);
 			}
 			br.close();
 		} catch (IOException e1) {
 			e1.printStackTrace();
 		}
-
-		posteriorMatrix = new double[posteriorList.size()][UTILITY.K];
-		for (int i = 0; i < posteriorList.size(); i++) {
-			posteriorMatrix[i] = posteriorList.get(i);
+		for (int d = 0; d < UTILITY.DIMENSION; d++) {
+			for (int v = 0; v < UTILITY.BINS; v++) {
+				COUNT_XdV_K[d][v] = countDVKList.get(d * UTILITY.BINS + v);
+			}
 		}
 
-		// 读入priors
+		// 读入count(k)
 		try {
-			File file = new File(UTILITY.BAYES_PRIOR_PATH);
+			File file = new File(countKPath);
 			BufferedReader br = new BufferedReader(new InputStreamReader(
 					new FileInputStream(file), "UTF-8"));
 			String curLine = br.readLine();
 			String[] lineArr = curLine.trim().split("\t");
 			for (int i = 0; i < lineArr.length; i++)
-				priors[i] = Double.valueOf(lineArr[i]);
+				count[i] = Double.valueOf(lineArr[i]);
 		} catch (IOException e1) {
 			e1.printStackTrace();
 		}
