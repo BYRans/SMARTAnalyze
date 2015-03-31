@@ -1,4 +1,6 @@
-package Training;
+package training;
+
+import golobal.UTILITY;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -10,8 +12,6 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-
-import Golobal.UTILITY;
 
 public class Binning {
 
@@ -33,7 +33,10 @@ public class Binning {
 			cutPointsList.add(cutPoints);
 		}
 
-		// next --> 由cutPointsList binning每个特征
+		// 存储cutPointsList
+		saveCutPoints(cutPointsList);
+
+		// 由cutPointsList binning每个特征
 		for (String[] vector : vectorList) {
 			Integer[] binVector = new Integer[vector.length];
 			for (int i = 0; i < vector.length; i++) {
@@ -64,6 +67,31 @@ public class Binning {
 		}
 
 		System.out.println("Finished...");
+	}
+
+	/**
+	 * 把各个特征的切分点写入文件
+	 * 
+	 * @param cutPointsList
+	 *            切分点数组List
+	 * @throws IOException
+	 * */
+	public static void saveCutPoints(List<double[]> cutPointsList)
+			throws IOException {
+		UTILITY.INIT_FILE(UTILITY.CUT_POINTS_PATH);
+		try {
+			BufferedWriter writer = new BufferedWriter(new FileWriter(new File(
+					UTILITY.CUT_POINTS_PATH), false));
+			for (double[] cutPoints : cutPointsList) {
+				for (double item : cutPoints)
+					writer.write(item + "\t");
+				writer.newLine();
+				writer.flush();
+			}
+			writer.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 
 	}
 
@@ -150,7 +178,6 @@ public class Binning {
 					.get(lastIndex + 1)) / 2;
 			cpindex++;
 		}
-
 		// 整理切分点数组，让数组里只包含找到的点 + 上界点
 		int arrLenth = 0;
 		for (int i = 0; i < cutPoints.length; i++) {
@@ -165,7 +192,6 @@ public class Binning {
 			finalCutPoints[i] = cutPoints[i];
 		}
 		finalCutPoints[arrLenth] = dataList.get(dataList.size() - 1) + 1;
-
 		return finalCutPoints;
 	}
 }

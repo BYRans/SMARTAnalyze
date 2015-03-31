@@ -1,4 +1,6 @@
-package Training;
+package training;
+
+import golobal.UTILITY;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -9,8 +11,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
-
-import Golobal.UTILITY;
 
 public class FeatureSeletion {
 

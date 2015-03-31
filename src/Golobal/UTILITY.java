@@ -1,4 +1,4 @@
-package Golobal;
+package golobal;
 
 import java.io.File;
 import java.io.IOException;
@@ -33,6 +33,9 @@ public final class UTILITY {
 
 	/** 特征向量 文件路径 */
 	public final static String FEATURE_VECTOR_PATH = "/home/pgxc/SMARTAnalyze/featureVector/featureVector.txt";
+
+	/** 特征向量 文件路径 */
+	public final static String CUT_POINTS_PATH = "/home/pgxc/SMARTAnalyze/featureVector/cutPoints.txt";
 
 	/** 特征向量 文件路径 */
 	public final static String BINNED_FEATURE_VECTOR_PATH = "/home/pgxc/SMARTAnalyze/featureVector/binnedFeatureVector.txt";

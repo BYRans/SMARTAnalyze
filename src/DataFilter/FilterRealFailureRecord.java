@@ -11,9 +11,10 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 
-public class FilterFailureDriver {
+public class FilterRealFailureRecord {
 
 	public static void main(String[] args) {
+		System.out.println("Running...");
 		String realFailDynPath = "C:/Users/Administrator/Desktop/SMARTAnalyze/separateData/dynamicData/realFailureDynData.txt";
 		String dynamicPath = "C:/Users/Administrator/Desktop/SMARTAnalyze/separateData/dynamicData/dynamicFailure.txt";
 		String staticPath = "C:/Users/Administrator/Desktop/SMARTAnalyze/separateData/staticData/staticFailure.txt";
@@ -36,32 +37,20 @@ public class FilterFailureDriver {
 		}
 
 		try {
-			File termSetFile = new File(dynamicPath);
-			BufferedReader br = new BufferedReader(new InputStreamReader(
-					new FileInputStream(termSetFile), "UTF-8"));
-			String curLine = br.readLine();
-			String[] lineArr = null;
-			while ((curLine = br.readLine()) != null) {
-				lineArr = curLine.split("\t");
-				if (serNumSet.contains(lineArr[lineArr.length - 1]))
-					list.add(curLine);
-			}
-			br.close();
-		} catch (IOException e1) {
-			e1.printStackTrace();
-		}
-
-		try {
 			BufferedWriter writer = new BufferedWriter(new FileWriter(new File(
-					realFailDynPath), false));
-			for (String record : list) {
+					standerStaPath), false));
+			for (String record : standerData) {
 				writer.write(record + "\r\n");
 				writer.flush();
 			}
+
 			writer.close();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 
+		System.out.println("Completed.");
+
 	}
+
 }
