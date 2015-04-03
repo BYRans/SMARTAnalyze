@@ -6,6 +6,21 @@ import java.io.IOException;
 /** 全局文件夹路径变量 */
 public final class UTILITY {
 
+	/** EM算法 将数据分为k类 */
+	public final static int K = 10;
+	/** Binning划分bins数目 */
+	public final static int BINS = 50;
+	/** 收敛误差 */
+	public final static double ERROR = 0.1;
+
+	/** 训练数据个数 */
+	public static double TRAIN_DATA_COUNT = 0;
+
+	/** 初始化训练数据个数 */
+	public static void SET_FEATURE_VECTOR_TrainDataCount(int count) {
+		UTILITY.TRAIN_DATA_COUNT = count;
+	}
+
 	/** 特征向量维数 D */
 	public static int DIMENSION = 12;
 
@@ -14,15 +29,10 @@ public final class UTILITY {
 		UTILITY.DIMENSION = count;
 	}
 
-	/** EM算法 将数据分为k类 */
-	public final static int K = 10;
-	/** Binning划分bins数目 */
-	public final static int BINS = 10;
-
 	/** 健康磁盘静态数据 文件路径 */
 	public final static String STATIC_HEALTH_PATH = "/home/pgxc/SMARTAnalyze/separateData/staticData/staticHealth.txt";
 
-	/** 健康磁盘动态数据 文件路径 */
+	/** 健康磁盘动态数据-训练数据 文件路径 */
 	public final static String DYNAMIC_HEALTH_PATH = "/home/pgxc/SMARTAnalyze/separateData/dynamicData/dynamicHealth.txt";
 
 	/** 故障磁盘静态数据 文件路径 */
@@ -34,11 +44,14 @@ public final class UTILITY {
 	/** 特征向量 文件路径 */
 	public final static String FEATURE_VECTOR_PATH = "/home/pgxc/SMARTAnalyze/featureVector/featureVector.txt";
 
-	/** 特征向量 文件路径 */
+	/** binning切分点 文件路径 */
 	public final static String CUT_POINTS_PATH = "/home/pgxc/SMARTAnalyze/featureVector/cutPoints.txt";
 
-	/** 特征向量 文件路径 */
+	/** binning后特征向量 文件路径 */
 	public final static String BINNED_FEATURE_VECTOR_PATH = "/home/pgxc/SMARTAnalyze/featureVector/binnedFeatureVector.txt";
+
+	/** binning后特征向量 文件路径 */
+	public final static String BINNED_TEST_FEATURE_VECTOR_PATH = "/home/pgxc/SMARTAnalyze/featureVector/OKTestSet.txt";
 
 	/** Bayes似然函数likelihood 存储文件路径 */
 	public final static String BAYES_POSTERIOR_PATH = "/home/pgxc/SMARTAnalyze/Bayes/posterior.txt";
@@ -53,7 +66,10 @@ public final class UTILITY {
 	public final static String BAYES_COUNT_K = "/home/pgxc/SMARTAnalyze/Bayes/countK.txt";
 
 	/** 测试集 存储文件路径 */
-	public final static String TEST_SET_PATH = "/home/pgxc/SMARTAnalyze/featureVector/testSet.txt";
+	public final static String TEST_SET_PATH = "/home/pgxc/SMARTAnalyze/testSet/testSet.txt";
+
+	/** 未处理的原始测试数据 存储文件路径 */
+	public final static String RAW_TEST_SET_PATH = "/home/pgxc/SMARTAnalyze/testSet/dynOKStateFailure.txt";
 
 	/**
 	 * 初始化文件 如果文件不存在，则创建该文件

@@ -16,6 +16,7 @@ public class MyEM {
 	private static ArrayList<Integer[]> binVecList = new ArrayList<Integer[]>();
 	static {
 		readBinVecData(UTILITY.BINNED_FEATURE_VECTOR_PATH);
+		UTILITY.SET_FEATURE_VECTOR_TrainDataCount(binVecList.size());
 	}
 	private static double[][] posteriorMatrix = new double[binVecList.size()][UTILITY.K];// p(k_j|x_i)后验概率
 	private static double[][] likelihoodMatrix = new double[binVecList.size()][UTILITY.K];// p(x_i|k_j)似然函数
@@ -24,7 +25,6 @@ public class MyEM {
 	private static int[][] SUM_x_ki_xd = new int[UTILITY.DIMENSION][UTILITY.BINS];// I是数据集中x某一维的值等于(v_i+1)的总数,v的取值是1到bins
 	private static double[] priors = new double[UTILITY.K];// p(k_j)先验概率
 	private static double[] count = new double[UTILITY.K];// count[k_i]为所有x_i取值的p(k_i|x_i)总和，
-	private static double error = 0.001;
 
 	public static void main(String args[]) throws IOException {
 		System.out.println("Running...");
@@ -46,7 +46,8 @@ public class MyEM {
 		}
 		// 初始化priors
 		for (int i = 0; i < UTILITY.K; i++) {
-			priors[i] = Math.random();
+			// priors[i] = Math.random();
+			priors[i] = 1.0 / UTILITY.K;
 		}
 	}
 
@@ -56,20 +57,23 @@ public class MyEM {
 		double prevLogLikeliHood = 0;
 		double logLikeliHood = 0;
 		do {
+			System.out.println("Step " + ++step + "\t");
+			System.out.print("priors: ");
+			for (double prior : priors)
+				System.out.print(prior + "\t");
 			EStep();// 更新posteriorMatrix，即更新p(w_i|x_i)
 			prevLogLikeliHood = calculateLogLikelyHood();
 			MStep();
 			logLikeliHood = calculateLogLikelyHood();
-			System.out.print("Step " + ++step + "\t");
 		} while (!converged(logLikeliHood, prevLogLikeliHood));
 	}
 
 	/** EM算法 E-Step */
 	public static void EStep() {
-		System.out.println("E-Steping...");
+		System.out.println("\nE-Stepping...");
 		// evidence证据因子，即p(x)
-		double evidence = 0.0;
 		for (int i = 0; i < binVecList.size(); i++) {
+			double evidence = 0.0;
 			for (int j = 0; j < UTILITY.K; j++) {
 				double posterior = priors[j] * likelihoodMatrix[i][j];
 				evidence = evidence + posterior;
@@ -83,7 +87,7 @@ public class MyEM {
 
 	/** EM算法 M-Step */
 	public static void MStep() {
-		System.out.println("M-Steping...");
+		System.out.println("M-Stepping...");
 		// 求count_k。count_k is the number of data points in the training dataset
 		// which satisfy the predicate k.
 		System.out.println("updating count_k...");
@@ -109,8 +113,8 @@ public class MyEM {
 		System.out.println("updating COUNT_XdV_K[][][]...");
 		for (int j = 0; j < UTILITY.K; j++) {// k
 			for (int d = 0; d < UTILITY.DIMENSION; d++) {// d维向量
-				double count_xdv_kj = 0.0;
 				for (int v = 1; v <= UTILITY.BINS; v++) {// x_i = v循环
+					double count_xdv_kj = 0.0;
 					for (int xi = 0; xi < binVecList.size(); xi++) {// 遍历所有的数据求所有x的P(k_j|x_i)
 						if (binVecList.get(xi)[d] == v)// 指示函数I，当xd==v时加到sum里
 							count_xdv_kj += posteriorMatrix[xi][j];
@@ -133,8 +137,8 @@ public class MyEM {
 	public static double calculateLogLikelyHood() {
 		double result = 0.0;
 		// evidence证据因子，即p(x)
-		double evidence = 0.0;
 		for (int i = 0; i < binVecList.size(); i++) {
+			double evidence = 0.0;
 			for (int j = 0; j < UTILITY.K; j++) {
 				double posterior = priors[j] * likelihoodMatrix[i][j];
 				evidence = evidence + posterior;
@@ -144,19 +148,33 @@ public class MyEM {
 		return result;
 	}
 
-	/** 更新Bayes似然函数 */
+	/**
+	 * 更新Bayes似然函数 verion2
+	 * */
 	public static void updateLikelihood(int i, int j) {
 		double possibility = 1.0;
 		for (int d = 0; d < UTILITY.DIMENSION; d++) {// d维向量
 			double p_xi_k = 0.0;// v个p_xiv_k和
-			double count_xdv_kj = 0.0;
-			for (int v = 1; v <= UTILITY.BINS; v++) {// x_i = v循环
-				p_xi_k += COUNT_XdV_K[d][v - 1][j] / count[j];// v个p(xi=v|k)的和就是p(xi|k)
-			}
+			p_xi_k = (COUNT_XdV_K[d][binVecList.get(i)[d] - 1][j] + 1 / UTILITY.TRAIN_DATA_COUNT)
+					/ (count[j] + UTILITY.BINS / UTILITY.TRAIN_DATA_COUNT);// p(xi=v|k)的和就是p(xi|k)
 			possibility *= p_xi_k;// d个p(xd|k)相乘
 		}
 		likelihoodMatrix[i][j] = possibility;
 	}
+
+	// /** 更新Bayes似然函数 */
+	// public static void updateLikelihood(int i, int j) {
+	// double possibility = 1.0;
+	// for (int d = 0; d < UTILITY.DIMENSION; d++) {// d维向量
+	// double p_xi_k = 0.0;// v个p_xiv_k和
+	// double count_xdv_kj = 0.0;
+	// for (int v = 1; v <= UTILITY.BINS; v++) {// x_i = v循环
+	// p_xi_k += COUNT_XdV_K[d][v - 1][j] / count[j];// v个p(xi=v|k)的和就是p(xi|k)
+	// }
+	// possibility *= p_xi_k;// d个p(xd|k)相乘
+	// }
+	// likelihoodMatrix[i][j] = possibility;
+	// }
 
 	/**
 	 * 判断是否收敛
@@ -170,8 +188,8 @@ public class MyEM {
 	public static boolean converged(double logLikelihood,
 			double previousLogLikelihood) {
 		System.out.println("change: "
-				+ (Math.abs(logLikelihood - previousLogLikelihood)));
-		if (Math.abs(logLikelihood - previousLogLikelihood) < error) {
+				+ (logLikelihood - previousLogLikelihood) + "\n");
+		if (Math.abs(logLikelihood - previousLogLikelihood) < UTILITY.ERROR) {
 			return true;
 		}
 		return false;

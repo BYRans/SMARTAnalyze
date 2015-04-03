@@ -16,14 +16,33 @@ public class NaiveBayes {
 	private static double[][][] COUNT_XdV_K = new double[UTILITY.DIMENSION][UTILITY.BINS][UTILITY.K];// count_xdv_ki,公式3的分子
 	private static double[] count = new double[UTILITY.K];// count[k_i]为所有x_i取值的p(k_i|x_i)总和
 	private static double totalCount_k = 0.0;// count[k]总和
+	static {
+		int trainDataCount = 0;
+		try {
+			File file = new File(UTILITY.BINNED_FEATURE_VECTOR_PATH);
+			BufferedReader br = new BufferedReader(new InputStreamReader(
+					new FileInputStream(file), "UTF-8"));
+			String curLine = null;
+			while ((curLine = br.readLine()) != null) {
+				trainDataCount++;
+			}
+			br.close();
+		} catch (IOException e1) {
+			e1.printStackTrace();
+		}
+		UTILITY.SET_FEATURE_VECTOR_TrainDataCount(trainDataCount);
+	}
 
 	public static void main(String[] args) {
 		List<double[]> predictList = new ArrayList<double[]>();
-
 		readPosteriorMatrixAndPrior(UTILITY.BAYES_COUNT_Xd_V_K,
 				UTILITY.BAYES_COUNT_K);
-		List<Integer[]> testSetList = readTestSet(UTILITY.TEST_SET_PATH);
+		String testSetPath = UTILITY.TEST_SET_PATH;
+		if (args != null && args.length == 1)
+			testSetPath = args[0];
+		List<Integer[]> testSetList = readTestSet(testSetPath);
 		initPriorsAndTotalCountK();
+		System.out.println(testSetList.size());
 		for (Integer[] testRecord : testSetList) {
 			double[] prediction = naiveBayes(testRecord);
 			double[] result = new double[2];
@@ -34,9 +53,10 @@ public class NaiveBayes {
 				}
 			}
 			predictList.add(result);
-			for (double[] record : predictList)
-				System.out.println(record[0] + "\t" + record[1]);
 		}
+		for (double[] record : predictList)
+			System.out.println(((int) record[0]) + "\t" + record[1]);
+
 	}
 
 	/**
@@ -48,11 +68,12 @@ public class NaiveBayes {
 	 * */
 	public static double[] naiveBayes(Integer[] vector) {
 		double[] prediction = new double[UTILITY.K];
-		double p_x_k = 1.0;
 		double evidence = 0.0;
 		for (int j = 0; j < UTILITY.K; j++) {
-			for (int d = 0; d < vector.length; d++) {// d维p（xi=v|k）成绩得到P(x|k)
-				p_x_k *= COUNT_XdV_K[d][vector[d] - 1][j] / count[j];// [vector[d]-1]是特征向量Xd处的值-1，v=Bin-1
+			double p_x_k = 1.0;
+			for (int d = 0; d < vector.length; d++) {// d维p(xi=v|k)成绩得到P(x|k)
+				p_x_k *= (COUNT_XdV_K[d][vector[d] - 1][j] + 1 / UTILITY.TRAIN_DATA_COUNT)
+						/ (count[j] + UTILITY.BINS / UTILITY.TRAIN_DATA_COUNT);// [vector[d]-1]是特征向量Xd处的值-1，v=Bin-1
 			}
 			double posterior = p_x_k * priors[j];
 			evidence = evidence + posterior;
@@ -74,6 +95,7 @@ public class NaiveBayes {
 		for (int j = 0; j < UTILITY.K; j++) {
 			priors[j] = count[j] / totalCount_k;
 		}
+
 	}
 
 	/**
@@ -138,18 +160,20 @@ public class NaiveBayes {
 		List<Integer[]> testSetList = new ArrayList<Integer[]>();
 		// 读入PosteriorMatrix
 		try {
-			File file = new File(UTILITY.TEST_SET_PATH);
+			File file = new File(testSetPath);
 			BufferedReader br = new BufferedReader(new InputStreamReader(
 					new FileInputStream(file), "UTF-8"));
 			String curLine = null;
 			String[] lineArr = null;
+			int count = 0;
 			while ((curLine = br.readLine()) != null) {
 				if ("".equals(curLine.trim()))
 					continue;
 				lineArr = curLine.trim().split("\t");
 				Integer[] intArr = new Integer[lineArr.length];
-				for (int i = 0; i < lineArr.length; i++)
+				for (int i = 0; i < lineArr.length; i++) {
 					intArr[i] = Integer.valueOf(lineArr[i]);
+				}
 				testSetList.add(intArr);
 			}
 			br.close();
