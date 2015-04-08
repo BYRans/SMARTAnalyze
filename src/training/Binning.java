@@ -50,12 +50,12 @@ public class Binning {
 			binVecList.add(binVector);
 		}
 
-		// binning后的Vector写入文件（从第101条开始，前100条做测试数据）
+		// binning后的Vector写入文件（从第101条开始，前10000条做测试数据）
 		UTILITY.INIT_FILE(UTILITY.BINNED_FEATURE_VECTOR_PATH);
 		try {
 			BufferedWriter writer = new BufferedWriter(new FileWriter(new File(
 					UTILITY.BINNED_FEATURE_VECTOR_PATH), false));
-			for (int i = 100; i < binVecList.size(); i++) {
+			for (int i = 10000; i < binVecList.size(); i++) {
 				for (Integer item : binVecList.get(i))
 					writer.write(item + "\t");
 				writer.newLine();
@@ -65,12 +65,12 @@ public class Binning {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		// binning后的Vector写入文件(前100条,用做做测试数据)
+		// binning后的Vector写入文件(前10000条,用做做测试数据)
 		UTILITY.INIT_FILE(UTILITY.BINNED_TEST_FEATURE_VECTOR_PATH);
 		try {
 			BufferedWriter writer = new BufferedWriter(new FileWriter(new File(
 					UTILITY.BINNED_TEST_FEATURE_VECTOR_PATH), false));
-			for (int i = 0; i < 100; i++) {
+			for (int i = 0; i < 10000; i++) {
 				for (Integer item : binVecList.get(i))
 					writer.write(item + "\t");
 				writer.newLine();

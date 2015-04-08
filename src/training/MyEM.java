@@ -57,6 +57,7 @@ public class MyEM {
 		double prevLogLikeliHood = 0;
 		double logLikeliHood = 0;
 		do {
+			long start = System.currentTimeMillis();
 			System.out.println("Step " + ++step + "\t");
 			System.out.print("priors: ");
 			for (double prior : priors)
@@ -65,6 +66,8 @@ public class MyEM {
 			prevLogLikeliHood = calculateLogLikelyHood();
 			MStep();
 			logLikeliHood = calculateLogLikelyHood();
+			System.out.println("using " + (System.currentTimeMillis() - start)
+					/ 1000 + "S");
 		} while (!converged(logLikeliHood, prevLogLikeliHood));
 	}
 
@@ -187,8 +190,8 @@ public class MyEM {
 	 * */
 	public static boolean converged(double logLikelihood,
 			double previousLogLikelihood) {
-		System.out.println("change: "
-				+ (logLikelihood - previousLogLikelihood) + "\n");
+		System.out.println("change: " + (logLikelihood - previousLogLikelihood)
+				+ "\n");
 		if (Math.abs(logLikelihood - previousLogLikelihood) < UTILITY.ERROR) {
 			return true;
 		}

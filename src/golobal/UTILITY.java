@@ -7,11 +7,11 @@ import java.io.IOException;
 public final class UTILITY {
 
 	/** EM算法 将数据分为k类 */
-	public final static int K = 10;
+	public final static int K = 100;
 	/** Binning划分bins数目 */
-	public final static int BINS = 50;
+	public final static int BINS = 100;
 	/** 收敛误差 */
-	public final static double ERROR = 0.1;
+	public final static double ERROR = 0.001;
 
 	/** 训练数据个数 */
 	public static double TRAIN_DATA_COUNT = 0;
@@ -70,6 +70,7 @@ public final class UTILITY {
 
 	/** 未处理的原始测试数据 存储文件路径 */
 	public final static String RAW_TEST_SET_PATH = "/home/pgxc/SMARTAnalyze/testSet/dynOKStateFailure.txt";
+//	public final static String RAW_TEST_SET_PATH = "/home/pgxc/SMARTAnalyze/testSet/dynFailStateFailurePath.txt";
 
 	/**
 	 * 初始化文件 如果文件不存在，则创建该文件

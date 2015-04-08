@@ -30,36 +30,75 @@ public class FilterRealFailureRecord {
 		String dynOKStateFailurePath = "/home/pgxc/SMARTAnalyze/testSet/dynOKStateFailure.txt";
 		String dynFailStateFailurePath = "/home/pgxc/SMARTAnalyze/testSet/dynFailStateFailurePath.txt";
 
-		HashMap<String, String> failureMap = new HashMap<String, String>();
-		HashMap<String, String> OKStateMap = new HashMap<String, String>();
+		HashMap<String, Date> failureMap = new HashMap<String, Date>();
+		HashMap<String, Date> OKStateMap = new HashMap<String, Date>();
 
 		// 得到状态为故障的磁盘序列号+时间 和状态为健康的磁盘突然被换掉的磁盘序列号+最后出现时间 start--
+		// try {
+		// File termSetFile = new File(staticPath);
+		// BufferedReader br = new BufferedReader(new InputStreamReader(
+		// new FileInputStream(termSetFile), "UTF-8"));
+		// String curLine = br.readLine();
+		// String[] lineArr = null;
+		// while ((curLine = br.readLine()) != null) {
+		// lineArr = curLine.split("\t");
+		// if (!"OK".equals(lineArr[lineArr.length - 1])) {
+		// if (failureMap.get(lineArr[lineArr.length - 4]) == null
+		// || DATE_TEMPLATE.parse(lineArr[3]).getTime() > failureMap
+		// .get(lineArr[lineArr.length - 4]).getTime())
+		// failureMap.put(lineArr[lineArr.length - 4],
+		// DATE_TEMPLATE.parse(lineArr[3]));
+		// } else {
+		// if (OKStateMap.get(lineArr[lineArr.length - 4]) == null
+		// || DATE_TEMPLATE.parse(lineArr[3]).getTime() > OKStateMap
+		// .get(lineArr[lineArr.length - 4]).getTime()) {
+		// OKStateMap.put(lineArr[lineArr.length - 4],
+		// DATE_TEMPLATE.parse(lineArr[3]));
+		// }
+		// }
+		// }
+		// br.close();
+		// } catch (IOException e1) {
+		// e1.printStackTrace();
+		// }
+
 		try {
-			File termSetFile = new File(staticPath);
+			File termSetFile = new File(dynamicPath);
 			BufferedReader br = new BufferedReader(new InputStreamReader(
 					new FileInputStream(termSetFile), "UTF-8"));
 			String curLine = br.readLine();
 			String[] lineArr = null;
 			while ((curLine = br.readLine()) != null) {
 				lineArr = curLine.split("\t");
-				if (!"OK".equals(lineArr[lineArr.length - 1]))
-					failureMap.put(lineArr[lineArr.length - 4], lineArr[3]);
-				OKStateMap.put(lineArr[lineArr.length - 4], lineArr[3]);
+				if (OKStateMap.get(lineArr[lineArr.length - 1]) == null
+						|| DATE_TEMPLATE.parse(lineArr[3]).getTime() > OKStateMap
+								.get(lineArr[lineArr.length - 1]).getTime()) {
+					OKStateMap.put(lineArr[lineArr.length - 1],
+							DATE_TEMPLATE.parse(lineArr[3]));
+				}
 			}
 			br.close();
 		} catch (IOException e1) {
 			e1.printStackTrace();
 		}
-		Date lastDate = new Date(2015, 2, 9, 0, 0, 0);
-		for (Entry<String, String> serTime : OKStateMap.entrySet()) {
-			if (DATE_TEMPLATE.parse(serTime.getValue()).getTime() > lastDate
-					.getTime())
-				OKStateMap.remove(serTime.getKey());
+
+		Date lastDate = DATE_TEMPLATE.parse("2015-02-09 00:00:00");
+		List<String> rmKey = new ArrayList<String>();
+		for (Entry<String, Date> serTime : OKStateMap.entrySet()) {
+			if (serTime.getValue().getTime() > lastDate.getTime())
+				rmKey.add(serTime.getKey());
 		}
+		for (String rm : rmKey)
+			OKStateMap.remove(rm);
 		// 得到状态为故障的磁盘序列号+时间 和状态为健康的磁盘突然被换掉的磁盘序列号+最后出现时间 --end
 
-		for (Entry<String, String> serTime : OKStateMap.entrySet()) {
-			System.out.println(serTime.getKey() + "  " + serTime.getValue());
+		Calendar cal = Calendar.getInstance();
+		for (Entry<String, Date> kv : OKStateMap.entrySet()) {
+			System.out.print(kv.getKey() + ":\t" + kv.getValue() + "\t -->  ");
+			cal.setTime(kv.getValue());
+			cal.add(Calendar.HOUR_OF_DAY, -6);// 从该磁盘消失前6个小时的数据，作为故障磁盘数据
+			kv.setValue(cal.getTime());
+			System.out.println(kv.getValue());
 		}
 
 		List<String> okFailureList = new ArrayList<String>();
@@ -70,29 +109,28 @@ public class FilterRealFailureRecord {
 					new FileInputStream(termSetFile), "UTF-8"));
 			String curLine = br.readLine();
 			String[] lineArr = null;
-			Calendar cal = Calendar.getInstance();
-			Date start = null;
 			while ((curLine = br.readLine()) != null) {
 				lineArr = curLine.split("\t");
 				if (OKStateMap.containsKey(lineArr[lineArr.length - 1])) {
-					start = DATE_TEMPLATE.parse(OKStateMap
-							.get(lineArr[lineArr.length - 1]));
-					cal.setTime(start);
-					cal.add(Calendar.HOUR_OF_DAY, -3);// 从该磁盘消失前3个小时的数据，作为故障磁盘数据
-					start = cal.getTime();
-					if (DATE_TEMPLATE.parse(lineArr[3]).getTime() > start
-							.getTime())
+					if (DATE_TEMPLATE.parse(lineArr[3]).getTime() > OKStateMap
+							.get(lineArr[lineArr.length - 1]).getTime())
 						okFailureList.add(curLine);
-				} else if (failureMap.containsKey(lineArr[lineArr.length - 1])) {
-					start = DATE_TEMPLATE.parse(failureMap
-							.get(lineArr[lineArr.length - 1]));
-					cal.setTime(start);
-					cal.add(Calendar.HOUR_OF_DAY, -3);// 从该磁盘消失前3个小时的数据，作为故障磁盘数据
-					start = cal.getTime();
-					if (DATE_TEMPLATE.parse(lineArr[3]).getTime() > start
-							.getTime())
-						falseFailureList.add(curLine);
 				}
+				// else if (failureMap.containsKey(lineArr[lineArr.length - 1]))
+				// {
+				// start = DATE_TEMPLATE.parse(failureMap
+				// .get(lineArr[lineArr.length - 1]));
+				// cal.setTime(start);
+				// cal.add(Calendar.HOUR_OF_DAY, -3);
+				// start = cal.getTime();
+				// cal.add(Calendar.HOUR_OF_DAY, 3);
+				// Date end = cal.getTime();
+				// if (DATE_TEMPLATE.parse(lineArr[3]).getTime() > start
+				// .getTime()
+				// && end.getTime() > DATE_TEMPLATE.parse(lineArr[3])
+				// .getTime())
+				// falseFailureList.add(curLine);
+				// }
 			}
 			br.close();
 		} catch (IOException e1) {
