@@ -10,7 +10,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.Random;
 
 public class MyEM {
 	private static ArrayList<Integer[]> binVecList = new ArrayList<Integer[]>();
@@ -20,9 +19,7 @@ public class MyEM {
 	}
 	private static double[][] posteriorMatrix = new double[binVecList.size()][UTILITY.K];// p(k_j|x_i)后验概率
 	private static double[][] likelihoodMatrix = new double[binVecList.size()][UTILITY.K];// p(x_i|k_j)似然函数
-	private static double[][] p_xiv_k = new double[UTILITY.DIMENSION][UTILITY.K];// p_xiv_k是式子3的值。d维k类x=v的似然函数
 	private static double[][][] COUNT_XdV_K = new double[UTILITY.DIMENSION][UTILITY.BINS][UTILITY.K];// count_xdv_ki,公式3的分子
-	private static int[][] SUM_x_ki_xd = new int[UTILITY.DIMENSION][UTILITY.BINS];// I是数据集中x某一维的值等于(v_i+1)的总数,v的取值是1到bins
 	private static double[] priors = new double[UTILITY.K];// p(k_j)先验概率
 	private static double[] count = new double[UTILITY.K];// count[k_i]为所有x_i取值的p(k_i|x_i)总和，
 
@@ -46,8 +43,8 @@ public class MyEM {
 		}
 		// 初始化priors
 		for (int i = 0; i < UTILITY.K; i++) {
-			// priors[i] = Math.random();
-			priors[i] = 1.0 / UTILITY.K;
+			// priors[i] = Math.random();//随机初始化先验概率
+			priors[i] = 1.0 / UTILITY.K;//平均初始化先验概率
 		}
 	}
 
@@ -152,7 +149,7 @@ public class MyEM {
 	}
 
 	/**
-	 * 更新Bayes似然函数 verion2
+	 * 更新Bayes似然函数
 	 * */
 	public static void updateLikelihood(int i, int j) {
 		double possibility = 1.0;
@@ -165,18 +162,6 @@ public class MyEM {
 		likelihoodMatrix[i][j] = possibility;
 	}
 
-	// /** 更新Bayes似然函数 */
-	// public static void updateLikelihood(int i, int j) {
-	// double possibility = 1.0;
-	// for (int d = 0; d < UTILITY.DIMENSION; d++) {// d维向量
-	// double p_xi_k = 0.0;// v个p_xiv_k和
-	// double count_xdv_kj = 0.0;
-	// for (int v = 1; v <= UTILITY.BINS; v++) {// x_i = v循环
-	// p_xi_k += COUNT_XdV_K[d][v - 1][j] / count[j];// v个p(xi=v|k)的和就是p(xi|k)
-	// }
-	// possibility *= p_xi_k;// d个p(xd|k)相乘
-	// }
-	// likelihoodMatrix[i][j] = possibility;
 	// }
 
 	/**
@@ -272,17 +257,3 @@ public class MyEM {
 	}
 }
 
-// /** 初始化，为进行E-Step M-Step做准备 */
-// public static void initParameters() {
-// System.out.println("init Parameters..");
-// // 初始化likelihoodMatrix，行--样本 列--类别。
-// for (int i = 0; i < binVecList.size(); i++) {
-// for (int j = 0; j < UTILITY.K; j++) {
-// likelihoodMatrix[i][j] = 1.0 / (double) binVecList.size();
-// }
-// }
-// // 初始化priors
-// for (int i = 0; i < UTILITY.K; i++) {
-// priors[i] = 1.0 / (double) UTILITY.K;
-// }
-// }

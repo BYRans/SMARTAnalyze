@@ -38,7 +38,7 @@ public class FilterRealFailureRecord {
 		// File termSetFile = new File(staticPath);
 		// BufferedReader br = new BufferedReader(new InputStreamReader(
 		// new FileInputStream(termSetFile), "UTF-8"));
-		// String curLine = br.readLine();
+		// String curLine = null;
 		// String[] lineArr = null;
 		// while ((curLine = br.readLine()) != null) {
 		// lineArr = curLine.split("\t");
@@ -66,7 +66,7 @@ public class FilterRealFailureRecord {
 			File termSetFile = new File(dynamicPath);
 			BufferedReader br = new BufferedReader(new InputStreamReader(
 					new FileInputStream(termSetFile), "UTF-8"));
-			String curLine = br.readLine();
+			String curLine = null;
 			String[] lineArr = null;
 			while ((curLine = br.readLine()) != null) {
 				lineArr = curLine.split("\t");
@@ -107,7 +107,7 @@ public class FilterRealFailureRecord {
 			File termSetFile = new File(dynamicPath);
 			BufferedReader br = new BufferedReader(new InputStreamReader(
 					new FileInputStream(termSetFile), "UTF-8"));
-			String curLine = br.readLine();
+			String curLine = null;
 			String[] lineArr = null;
 			while ((curLine = br.readLine()) != null) {
 				lineArr = curLine.split("\t");
