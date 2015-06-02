@@ -3,7 +3,7 @@ import golobal.UTILITY;
 import java.io.IOException;
 import java.util.Date;
 
-import training.Binning;
+import training.EqualFrequencyBinning;
 import training.MyEM;
 import training.NaiveBayes;
 import verification.TestDataProcess;
@@ -13,7 +13,7 @@ public class OneKeyRunning {
 	public static void main(String[] args) throws IOException {
 		// TODO Auto-generated method stub
 		long startTime = System.currentTimeMillis();
-		Binning.main(null);
+		EqualFrequencyBinning.main(null);
 		MyEM.main(null);
 		TestDataProcess.main(null);
 		System.out.println("===========================");
