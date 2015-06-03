@@ -1,10 +1,8 @@
 import golobal.UTILITY;
 
 import java.io.IOException;
-import java.util.Date;
-
 import training.EqualFrequencyBinning;
-import training.MyEM;
+import training.EM;
 import training.NaiveBayes;
 import verification.TestDataProcess;
 
@@ -14,7 +12,7 @@ public class OneKeyRunning {
 		// TODO Auto-generated method stub
 		long startTime = System.currentTimeMillis();
 		EqualFrequencyBinning.main(null);
-		MyEM.main(null);
+		EM.main(null);
 		TestDataProcess.main(null);
 		System.out.println("===========================");
 		System.out.println("failure test set");

@@ -11,12 +11,13 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 
-public class MyEM {
+public class EM {
 	private static ArrayList<Integer[]> binVecList = new ArrayList<Integer[]>();
 	static {
 		readBinVecData(UTILITY.BINNED_FEATURE_VECTOR_PATH);
 		UTILITY.SET_FEATURE_VECTOR_TrainDataCount(binVecList.size());
 	}
+
 	private static double[][] posteriorMatrix = new double[binVecList.size()][UTILITY.K];// p(k_j|x_i)后验概率
 	private static double[][] likelihoodMatrix = new double[binVecList.size()][UTILITY.K];// p(x_i|k_j)似然函数
 	private static double[][][] COUNT_XdV_K = new double[UTILITY.DIMENSION][UTILITY.BINS][UTILITY.K];// count_xdv_ki,公式3的分子
@@ -44,7 +45,7 @@ public class MyEM {
 		// 初始化priors
 		for (int i = 0; i < UTILITY.K; i++) {
 			// priors[i] = Math.random();//随机初始化先验概率
-			priors[i] = 1.0 / UTILITY.K;//平均初始化先验概率
+			priors[i] = 1.0 / UTILITY.K;// 平均初始化先验概率
 		}
 	}
 
@@ -109,18 +110,30 @@ public class MyEM {
 			priors[j] = count[j] / totalCount_k;
 		}
 
+		/*
+		 * // 更新COUNT_XdV_K,公式3的分子
+		 * System.out.println("updating COUNT_XdV_K[][][]..."); double
+		 * count_xdv_kj = 0.0; for (int j = 0; j < UTILITY.K; j++) {// k for
+		 * (int d = 0; d < UTILITY.DIMENSION; d++) {// d维向量 for (int v = 1; v <=
+		 * UTILITY.BINS; v++) {// x_i = v循环 count_xdv_kj = 0.0; for (int xi = 0;
+		 * xi < binVecList.size(); xi++) {// 遍历所有的数据求所有x的P(k_j|x_i) if
+		 * (binVecList.get(xi)[d] == v)// 指示函数I，当xd==v时加到sum里 count_xdv_kj +=
+		 * posteriorMatrix[xi][j]; } COUNT_XdV_K[d][v - 1][j] = count_xdv_kj; }
+		 * } }
+		 */
+		/** 2015/6/3 丁煜修改 降低时间复杂度 */
 		// 更新COUNT_XdV_K,公式3的分子
 		System.out.println("updating COUNT_XdV_K[][][]...");
 		for (int j = 0; j < UTILITY.K; j++) {// k
 			for (int d = 0; d < UTILITY.DIMENSION; d++) {// d维向量
-				for (int v = 1; v <= UTILITY.BINS; v++) {// x_i = v循环
-					double count_xdv_kj = 0.0;
-					for (int xi = 0; xi < binVecList.size(); xi++) {// 遍历所有的数据求所有x的P(k_j|x_i)
-						if (binVecList.get(xi)[d] == v)// 指示函数I，当xd==v时加到sum里
-							count_xdv_kj += posteriorMatrix[xi][j];
-					}
-					COUNT_XdV_K[d][v - 1][j] = count_xdv_kj;
+				// count_xdv_kj是一个数组，存储B个count_xdv_k,这样只需要遍历一遍binVecList，这段看不懂可参考上面注释掉的代码。
+				double[] count_xdv_kj = new double[UTILITY.BINS];
+				for (int xi = 0; xi < binVecList.size(); xi++) {// 遍历所有的数据求所有x的P(k_j|x_i)
+					// posteriorMatrix值分别按B分别求和，存储到count_xdv_kj数组中。binVecList中每一维值都在B以内。在这里是在同时计算论文中sum(P(k|x)*I(x_i=v))
+					count_xdv_kj[binVecList.get(xi)[d] - 1] += posteriorMatrix[xi][j];
 				}
+				for (int v = 0; v < UTILITY.BINS; v++)
+					COUNT_XdV_K[d][v][j] = count_xdv_kj[v];// count_xdv_kj数组中就是B个count_xdv_k
 			}
 		}
 
@@ -161,8 +174,6 @@ public class MyEM {
 		}
 		likelihoodMatrix[i][j] = possibility;
 	}
-
-	// }
 
 	/**
 	 * 判断是否收敛
@@ -256,4 +267,3 @@ public class MyEM {
 		}
 	}
 }
-
