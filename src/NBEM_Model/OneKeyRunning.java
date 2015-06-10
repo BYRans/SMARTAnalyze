@@ -1,10 +1,10 @@
-import golobal.UTILITY;
+import NBEM_Model.golobal.UTILITY;
 
 import java.io.IOException;
-import training.EqualFrequencyBinning;
-import training.EM;
-import training.NaiveBayes;
-import verification.TestDataProcess;
+import NBEM_Model.training.EqualFrequencyBinning;
+import NBEM_Model.training.EM;
+import NBEM_Model.training.NaiveBayes;
+import NBEM_Model.verification.TestDataProcess;
 
 public class OneKeyRunning {
 

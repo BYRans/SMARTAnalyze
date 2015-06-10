@@ -1,6 +1,6 @@
-package training;
+package NBEM_Model.training;
 
-import golobal.UTILITY;
+import NBEM_Model.golobal.UTILITY;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;

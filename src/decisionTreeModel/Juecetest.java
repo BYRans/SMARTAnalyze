@@ -1,4 +1,4 @@
-package anotherModel;
+package decisionTreeModel;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
